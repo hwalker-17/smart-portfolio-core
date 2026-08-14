@@ -43,7 +43,7 @@ class Instrumento:
             "Tecnología", "Finanzas", "Salud", "Energía", 
             "Consumo Discrecional", "Consumo Básico", 
             "Industriales", "Materiales", "Inmobiliario", 
-            "Telecomunicaciones", "Servicios Públicos"
+            "Telecomunicaciones", "Servicios Públicos", "Gobierno"
         ]
         if sector_limpio not in sectores_permitidos:
             raise ValueError(f"Error de Negocio: Sector '{sector_limpio}' no está en la lista. Use alguno de los siguientes: {sectores_permitidos}")
