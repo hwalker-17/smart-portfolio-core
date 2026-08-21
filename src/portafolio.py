@@ -1,7 +1,11 @@
+from typing import List
+from src.modelos import Posicion
+
+
 class Portafolio:
     def __init__(self):
-        self.posiciones = []
+        self.posiciones: List[Posicion] = []
 
-    def agregar_posicion(self, posicion):
-        """Recibe un objeto Posicion y lo guarda en la lista."""
+    def agregar_posicion(self, posicion: Posicion):
+        """Guarda un objeto Posicion en la lista de posiciones."""
         self.posiciones.append(posicion)
