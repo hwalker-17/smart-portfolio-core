@@ -113,4 +113,14 @@ class Posicion:
             raise ValueError("Error: El precio de mercado no puede ser negativo.")
         return self.cantidad * precio_mercado
 
+    def calcular_ganancia_no_realizada(self, precio_actual: float) -> float:
+        """
+        Calcula la ganancia o pérdida no realizada (Unrealized P&L).
+        Compara el precio al que se compró vs el precio actual del mercado.
+        """
+        valor_pagado = self.cantidad * self.precio_entrada
+        valor_mercado = self.cantidad * precio_actual
+        
+        return valor_mercado - valor_pagado
+
 
