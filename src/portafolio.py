@@ -7,5 +7,5 @@ class Portafolio:
         self.posiciones: List[Posicion] = []
 
     def agregar_posicion(self, posicion: Posicion):
-        """Guarda un objeto Posicion en la lista de posiciones."""
+        """Recibe un objeto Posicion y lo guarda en la lista."""
         self.posiciones.append(posicion)
