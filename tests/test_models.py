@@ -112,3 +112,64 @@ def test_calculo_pnl(precio_entrada, precio_actual, cantidad, esperado, instrume
     posicion = Posicion(instrumento=instrumento_test, cantidad=cantidad, precio_entrada=precio_entrada)
     pnl = posicion.calcular_ganancia_no_realizada(precio_actual=precio_actual)
     assert pnl == pytest.approx(esperado)
+    
+# ==========================================
+# MOCKS Y FIXTURES PARA ML
+# ==========================================
+
+class MockDataProvider:
+    """Simula Yahoo Finance con datos predecibles."""
+    def obtener_datos(self, ticker: str) -> list[float]:
+        # Pendiente=1.0, Intercepto=10.0, Ultimo Precio=120
+        return [100.0, 110.0, 120.0]
+
+class MockDataInsuficiente:
+    def obtener_datos(self, ticker: str) -> list[float]:
+        return [100.0]
+
+class MockDataVarianzaCero:
+    def obtener_datos(self, ticker: str) -> list[float]:
+        return [100.0, 100.0, 100.0]
+
+class MockDataCorrupta:
+    def obtener_datos(self, ticker: str) -> list:
+        return [100.0, None, "Error"]
+
+@pytest.fixture
+def instrumento_inteligente():
+    return Instrumento(
+        ticker="AAPL",
+        tipo="Acción",
+        sector="Tecnología",
+        data_provider=MockDataProvider()
+    )
+
+def test_instrumento_entrenar_sin_provider():
+    inst = Instrumento(ticker="AAPL", tipo="Acción", sector="Tecnología")
+    with pytest.raises(ValueError, match="No se ha inyectado"):
+        inst.entrenar_modelo()
+
+def test_instrumento_entrenar_datos_insuficientes():
+    inst = Instrumento(ticker="AAPL", tipo="Acción", sector="Tecnología", data_provider=MockDataInsuficiente())
+    with pytest.raises(ValueError, match="Datos insuficientes"):
+        inst.entrenar_modelo()
+
+def test_instrumento_entrenar_varianza_cero():
+    inst = Instrumento(ticker="AAPL", tipo="Acción", sector="Tecnología", data_provider=MockDataVarianzaCero())
+    with pytest.raises(ValueError, match="Varianza cero"):
+        inst.entrenar_modelo()
+
+def test_instrumento_entrenamiento_y_prediccion_exitosa(instrumento_inteligente):
+    instrumento_inteligente.entrenar_modelo()
+    assert instrumento_inteligente._modelo_entrenado is True
+    prediccion_1 = instrumento_inteligente.predecir_tendencia(1)
+    assert prediccion_1 == pytest.approx(130.0)
+
+def test_instrumento_predecir_sin_entrenar(instrumento_inteligente):
+    with pytest.raises(RuntimeError, match="llamar a entrenar_modelo"):
+        instrumento_inteligente.predecir_tendencia(1)
+
+def test_instrumento_prediccion_dias_invalidos(instrumento_inteligente):
+    instrumento_inteligente.entrenar_modelo()
+    with pytest.raises(ValueError, match="mayores a cero"):
+        instrumento_inteligente.predecir_tendencia(0)
