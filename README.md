@@ -1,4 +1,36 @@
 
+# SmartPortfolio 🚀
+
+Sistema de gestión de portafolios de inversión desarrollado en Python. Reemplaza el control manual en Excel con un backend robusto, tipado y validado que previene errores humanos. Incluye una API REST con predicción de precios usando regresión lineal.
+
+## Equipo
+
+| Nombre | Rol |
+|--------|-----|
+| Hannah Walker | Arquitecto (Repository Owner) |
+| Cristian Huertas | Desarrollador - Modelos e Inteligencia |
+| Cristian Suarez | Desarrollador - Lógica, Reportes y CLI |
+
+## Estructura del Proyecto
+
+smart-portfolio-core/
+├── src/
+│ ├── init.py
+│ ├── modelos.py # Clases Instrumento, Posicion y MarketDataProvider
+│ ├── portafolio.py # Clase Portafolio
+│ ├── reportes.py # Clase ReportadorFinanciero
+│ ├── providers.py # StockProvider (integración Yahoo Finance)
+│ └── api.py # API REST con FastAPI
+├── tests/
+│ ├── conftest.py # Fixtures reutilizables
+│ ├── test_models.py # Tests de modelos e inteligencia
+│ ├── test_portafolio.py
+│ ├── test_api.py # Tests de endpoints REST
+│ └── test_providers.py
+├── main.py # CLI: El Oráculo Financiero
+├── .gitignore
+└── README.md
+
 ## API REST
 
 ### Correr el servidor
