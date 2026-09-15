@@ -14,7 +14,7 @@ class InstrumentoPrueba(Instrumento):
 
 def test_agregar_posicion_camino_feliz():
     portafolio = Portafolio()
-    instrumento = InstrumentoPrueba("Apple Inc.", "AAPL", "Acción")
+    instrumento = InstrumentoPrueba("AAPL", "Acción", "Tecnología")
     posicion = Posicion(instrumento, 10, 150.0)
 
     portafolio.agregar_posicion(posicion)
@@ -25,7 +25,7 @@ def test_agregar_posicion_camino_feliz():
 
 def test_remover_posicion_camino_feliz():
     portafolio = Portafolio()
-    instrumento = InstrumentoPrueba("Apple Inc.", "AAPL", "Acción")
+    instrumento = InstrumentoPrueba("AAPL", "Acción", "Tecnología")
     posicion = Posicion(instrumento, 10, 150.0)
     portafolio.agregar_posicion(posicion)
 
@@ -43,9 +43,9 @@ def test_remover_posicion_camino_infeliz():
 
 def test_reportador_financiero_cobertura():
     portafolio = Portafolio()
-    instrumento = InstrumentoPrueba("Apple Inc.", "AAPL", "Acción")
+    instrumento = InstrumentoPrueba("AAPL", "Acción", "Tecnología")
     posicion = Posicion(instrumento, 10, 150.0)
     portafolio.agregar_posicion(posicion)
 
-    reportador = ReportadorFinanciero(portafolio)
-    assert reportador is not None
+    reportador = ReportadorFinanciero()
+    reportador.imprimir_resumen(portafolio)
