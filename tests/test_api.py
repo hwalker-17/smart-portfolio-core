@@ -47,10 +47,9 @@ def test_estado_api_exitoso():
 
 @patch("src.api.YahooFinanceClient.obtener_historico")
 def test_obtener_historico_exitoso(mock_obtener_historico):
-    # Camino Feliz: Retorna datos
     mock_obtener_historico.return_value = DATOS_HISTORICOS_MOCK
     
-    response = client.get("/historico/aapl") # Pasamos en minúscula para probar normalización
+    response = client.get("/historico/aapl")
     
     assert response.status_code == 200
     datos = response.json()
@@ -60,12 +59,10 @@ def test_obtener_historico_exitoso(mock_obtener_historico):
     assert len(datos["data"]) == 2
     assert datos["data"][0]["Close"] == 105.0
     
-    # Verificamos que el mock fue llamado exactamente con el parámetro esperado
     mock_obtener_historico.assert_called_once_with("aapl")
 
 @patch("src.api.YahooFinanceClient.obtener_historico")
 def test_obtener_historico_no_encontrado(mock_obtener_historico):
-    # Camino Triste: Retorna 404 si la lista está vacía
     mock_obtener_historico.return_value = []
     
     response = client.get("/historico/TICKERFALSO")
@@ -76,7 +73,6 @@ def test_obtener_historico_no_encontrado(mock_obtener_historico):
 
 @patch("src.api.YahooFinanceClient.obtener_historico")
 def test_obtener_historico_error_servidor(mock_obtener_historico):
-    # Camino Triste: Retorna 500 si el cliente falla
     mock_obtener_historico.side_effect = RuntimeError("Fallo de conexión simulado")
     
     response = client.get("/historico/AAPL")
@@ -92,7 +88,6 @@ def test_obtener_historico_error_servidor(mock_obtener_historico):
 
 @patch("src.api.yf.Ticker")
 def test_cliente_obtener_datos_exitoso(mock_ticker):
-    # Camino Feliz: Retorna solo lista de precios de cierre para ML
     mock_ticker.return_value.history.return_value = DATOS_PANDAS_MOCK
     
     cliente = YahooFinanceClient()
@@ -103,7 +98,6 @@ def test_cliente_obtener_datos_exitoso(mock_ticker):
 
 @patch("src.api.yf.Ticker")
 def test_cliente_obtener_datos_vacio(mock_ticker):
-    # Camino Triste: Ticker inválido, DataFrame vacío
     mock_ticker.return_value.history.return_value = pd.DataFrame()
     
     cliente = YahooFinanceClient()
@@ -113,7 +107,6 @@ def test_cliente_obtener_datos_vacio(mock_ticker):
 
 @patch("src.api.yf.Ticker")
 def test_cliente_obtener_datos_error(mock_ticker):
-    # Camino Triste: Falla la librería externa
     mock_ticker.return_value.history.side_effect = Exception("Caída de API")
     
     cliente = YahooFinanceClient()
@@ -122,7 +115,6 @@ def test_cliente_obtener_datos_error(mock_ticker):
 
 @patch("src.api.yf.Ticker")
 def test_cliente_obtener_historico_exitoso(mock_ticker):
-    # Camino Feliz: Retorna OHLCV en formato diccionario para la API
     mock_ticker.return_value.history.return_value = DATOS_PANDAS_MOCK
     
     cliente = YahooFinanceClient()
@@ -134,7 +126,6 @@ def test_cliente_obtener_historico_exitoso(mock_ticker):
 
 @patch("src.api.yf.Ticker")
 def test_cliente_obtener_historico_vacio(mock_ticker):
-    # Camino Triste: Ticker inválido, DataFrame vacío para histórico
     mock_ticker.return_value.history.return_value = pd.DataFrame()
     
     cliente = YahooFinanceClient()
@@ -144,9 +135,68 @@ def test_cliente_obtener_historico_vacio(mock_ticker):
 
 @patch("src.api.yf.Ticker")
 def test_cliente_obtener_historico_error(mock_ticker):
-    # Camino Triste: Falla la librería externa al pedir histórico
     mock_ticker.return_value.history.side_effect = Exception("Timeout")
     
     cliente = YahooFinanceClient()
     with pytest.raises(RuntimeError, match="Error al conectar con el proveedor"):
         cliente.obtener_historico("AAPL")
+
+
+# ==========================================
+# TESTS PARA EL ENDPOINT: GET /pronostico/{ticker}
+# ==========================================
+
+@patch("src.modelos.Instrumento")
+@patch("src.api.YahooFinanceClient")
+def test_obtener_pronostico_exitoso(mock_cliente, mock_instrumento_clase):
+    # Camino Feliz: Retorna predicción con parámetros por defecto (dias=7)
+    mock_instancia = mock_instrumento_clase.return_value
+    mock_instancia.predecir_tendencia.return_value = 329.20
+
+    response = client.get("/pronostico/aapl")
+
+    assert response.status_code == 200
+    datos = response.json()
+    assert datos["ticker"] == "AAPL"
+    assert datos["dias"] == 7
+    assert datos["prediccion"] == 329.20
+
+@patch("src.modelos.Instrumento")
+@patch("src.api.YahooFinanceClient")
+def test_obtener_pronostico_dias_personalizado(mock_cliente, mock_instrumento_clase):
+    # Verifica que el parámetro ?dias se pasa correctamente al modelo
+    mock_instancia = mock_instrumento_clase.return_value
+    mock_instancia.predecir_tendencia.return_value = 320.0
+
+    response = client.get("/pronostico/AAPL?dias=14")
+
+    assert response.status_code == 200
+    datos = response.json()
+    assert datos["dias"] == 14
+    mock_instancia.predecir_tendencia.assert_called_once_with(14)
+
+@patch("src.modelos.Instrumento")
+@patch("src.api.YahooFinanceClient")
+def test_obtener_pronostico_error_entrenamiento(mock_cliente, mock_instrumento_clase):
+    # Camino Triste: RuntimeError al entrenar → 500
+    mock_instancia = mock_instrumento_clase.return_value
+    mock_instancia.entrenar_modelo.side_effect = RuntimeError("Datos insuficientes para entrenar")
+
+    response = client.get("/pronostico/AAPL")
+
+    assert response.status_code == 500
+    datos = response.json()
+    assert "Datos insuficientes para entrenar" in datos["detail"]
+
+@patch("src.modelos.Instrumento")
+@patch("src.api.YahooFinanceClient")
+def test_obtener_pronostico_error_generico(mock_cliente, mock_instrumento_clase):
+    # Camino Triste: Excepción inesperada → 500
+    mock_instancia = mock_instrumento_clase.return_value
+    mock_instancia.predecir_tendencia.side_effect = Exception("Error inesperado del sistema")
+
+    response = client.get("/pronostico/AAPL")
+
+    assert response.status_code == 500
+    datos = response.json()
+    assert "Error inesperado del sistema" in datos["detail"]

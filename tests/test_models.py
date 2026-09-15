@@ -197,7 +197,6 @@ def test_calcular_valor_actual_errores(instrumento_test):
 def test_calculo_pnl(precio_entrada, precio_actual, cantidad, esperado, instrumento_test):
     posicion = Posicion(instrumento=instrumento_test, cantidad=cantidad, precio_entrada=precio_entrada)
     pnl = posicion.calcular_ganancia_no_realizada(precio_actual=precio_actual)
-<<<<<<< HEAD
     assert pnl == pytest.approx(esperado)
     
 # ==========================================
@@ -260,6 +259,3 @@ def test_instrumento_prediccion_dias_invalidos(instrumento_inteligente):
     instrumento_inteligente.entrenar_modelo()
     with pytest.raises(ValueError, match="mayores a cero"):
         instrumento_inteligente.predecir_tendencia(0)
-=======
-    assert pnl == pytest.approx(esperado)
->>>>>>> fcc89621ec02162e8b2655c1a62afdc69478b3f2
