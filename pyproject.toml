@@ -1,16 +1,31 @@
 [project]
 name = "smart-portfolio-core"
 version = "0.1.0"
-description = ""
+description = "Sistema de gestión de portafolios de inversión con API REST y predicción de precios"
 authors = [
     {name = "hwalker-17",email = "hjwortiz@gmail.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "fastapi>=0.100.0",
+    "uvicorn>=0.20.0",
+    "yfinance>=0.2.0",
+    "scikit-learn>=1.3.0",
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=7.0.0",
+    "httpx>=0.24.0",
+]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
